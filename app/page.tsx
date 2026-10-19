@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
   const [showIntro, setShowIntro] = useState(true);
-  const [introStep, setIntroStep] = useState(0);
+  const [introStep, setIntroStep] = useState('Igniting Charcoal Pits...');
+  const [progress, setProgress] = useState(0);
   const [activeTab, setActiveTab] = useState<'all' | 'grills' | 'starters' | 'drinks' | 'desserts'>('all');
   const [selectedLocation, setSelectedLocation] = useState('Connaught Place, New Delhi');
   const [guestCount, setGuestCount] = useState('4');
@@ -12,20 +13,154 @@ export default function Home() {
   const [bookingTime, setBookingTime] = useState('20:00');
   const [bookingStatus, setBookingStatus] = useState<string | null>(null);
 
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   useEffect(() => {
-    // Check if intro was already seen in session
     const seen = sessionStorage.getItem('pog_intro_seen');
     if (seen) {
       setShowIntro(false);
-    } else {
-      const timer1 = setTimeout(() => setIntroStep(1), 1000);
-      const timer2 = setTimeout(() => setIntroStep(2), 2800);
-      return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-      };
+      return;
     }
+
+    // Progress simulation for blender-style loading
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            setShowIntro(false);
+            sessionStorage.setItem('pog_intro_seen', 'true');
+          }, 500);
+          return 100;
+        }
+        const next = prev + 2;
+        if (next > 30 && next < 60) setIntroStep('Rendering 3D Blender Barbecue Mesh...');
+        if (next >= 60 && next < 90) setIntroStep('Simulating Glowing Embers & Pirate Sails...');
+        if (next >= 90) setIntroStep('Welcome Aboard, Captain!');
+        return next;
+      });
+    }, 40);
+
+    return () => clearInterval(interval);
   }, []);
+
+  // Canvas animation for embers and rotating 3D grill/helm
+  useEffect(() => {
+    if (!showIntro) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Particles (Embers & Sparks)
+    const particles = Array.from({ length: 80 }, () => ({
+      x: Math.random() * width,
+      y: height + Math.random() * 200,
+      radius: Math.random() * 3 + 1,
+      speedY: Math.random() * 2 + 1,
+      speedX: (Math.random() - 0.5) * 1.5,
+      opacity: Math.random() * 0.8 + 0.2,
+      color: Math.random() > 0.4 ? '#ea580c' : '#f59e0b'
+    }));
+
+    let angle = 0;
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw background glow
+      const gradient = ctx.createRadialGradient(width / 2, height / 2, 50, width / 2, height / 2, width / 1.2);
+      gradient.addColorStop(0, 'rgba(234, 88, 12, 0.18)');
+      gradient.addColorStop(0.5, 'rgba(15, 23, 42, 0.8)');
+      gradient.addColorStop(1, '#090a0f');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      // Render Floating Embers
+      particles.forEach(p => {
+        p.y -= p.speedY;
+        p.x += p.speedX + Math.sin(p.y * 0.02) * 0.5;
+        if (p.y < -10) {
+          p.y = height + 10;
+          p.x = Math.random() * width;
+        }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.opacity;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = p.color;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        ctx.shadowBlur = 0;
+      });
+
+      // Render 3D Rotating Pirate Helm / Barbecue Grill Wireframe & Core
+      ctx.save();
+      ctx.translate(width / 2, height / 2 - 40);
+      angle += 0.015;
+      ctx.rotate(angle);
+
+      // Outer ring (Ship wheel / Grill rim)
+      ctx.beginPath();
+      ctx.arc(0, 0, 110, 0, Math.PI * 2);
+      ctx.strokeStyle = '#ea580c';
+      ctx.lineWidth = 6;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = '#ea580c';
+      ctx.stroke();
+
+      // Inner charcoal core
+      ctx.beginPath();
+      ctx.arc(0, 0, 75, 0, Math.PI * 2);
+      ctx.fillStyle = '#18181b';
+      ctx.fill();
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Spokes / Skewers
+      for (let i = 0; i < 8; i++) {
+        const rad = (i * Math.PI) / 4;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(rad) * 110, Math.sin(rad) * 110);
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
+
+      // Center glowing emblem
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fillStyle = '#ea580c';
+      ctx.shadowBlur = 30;
+      ctx.shadowColor = '#ef4444';
+      ctx.fill();
+
+      ctx.restore();
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [showIntro]);
 
   const handleSkipIntro = () => {
     setShowIntro(false);
@@ -57,33 +192,40 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#090a0f] text-zinc-100 font-sans selection:bg-orange-500 selection:text-white relative overflow-x-hidden">
 
-      {/* CINEMATIC BLENDER/WEBGL STYLE INTRO OVERLAY */}
+      {/* CINEMATIC BLENDER/WEBGL STYLE 3D INTRO OVERLAY */}
       {showIntro && (
-        <div className="fixed inset-0 z-50 bg-[#090a0f] flex flex-col items-center justify-center p-6 transition-opacity duration-700">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,88,12,0.15)_0%,transparent_70%)] pointer-events-none animate-pulse"></div>
+        <div className="fixed inset-0 z-50 bg-[#090a0f] flex flex-col items-center justify-center p-6 transition-opacity duration-1000">
+          <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 
-          <div className="max-w-2xl w-full text-center space-y-8 relative z-10">
-            <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-orange-600/20 border border-orange-500/30 text-orange-400 font-mono text-xs uppercase tracking-widest animate-bounce">
-              <span>🔥 Barbecue & Pirate Voyage</span>
+          <div className="max-w-xl w-full text-center space-y-6 relative z-10 bg-zinc-950/70 p-8 sm:p-12 rounded-3xl border border-orange-500/30 backdrop-blur-xl shadow-2xl shadow-orange-950/50">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-600/20 border border-orange-500/40 text-orange-400 font-mono text-xs uppercase tracking-widest">
+              <span>🔥 3D Blender Barbecue Simulation</span>
             </div>
 
-            <div className="space-y-4">
-              <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-white uppercase drop-shadow-[0_10px_20px_rgba(234,88,12,0.4)]">
+            <div className="space-y-3">
+              <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white uppercase drop-shadow-[0_10px_25px_rgba(234,88,12,0.5)]">
                 Pirates <span className="bg-gradient-to-r from-orange-500 via-amber-400 to-orange-600 bg-clip-text text-transparent">of Grill</span>
               </h1>
-              <p className="text-lg sm:text-xl text-zinc-400 max-w-lg mx-auto font-light">
-                {introStep === 0 && "Igniting the open charcoal grills across the seven seas..."}
-                {introStep === 1 && "Unearthing legendary recipes & bottomless feasts..."}
-                {introStep === 2 && "Welcome aboard. Your ultimate dining voyage begins now."}
+              <p className="text-xs sm:text-sm font-mono text-zinc-400 tracking-wider">
+                {introStep}
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+            {/* Progress Bar */}
+            <div className="w-full bg-zinc-900 rounded-full h-2.5 overflow-hidden border border-zinc-800">
+              <div
+                className="bg-gradient-to-r from-orange-600 to-amber-500 h-2.5 rounded-full transition-all duration-150 shadow-[0_0_12px_rgba(234,88,12,0.8)]"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+
+            <div className="pt-2 flex items-center justify-between">
+              <span className="text-xs font-mono text-zinc-500">{progress}% Loaded</span>
               <button
                 onClick={handleSkipIntro}
-                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold tracking-wider uppercase shadow-xl shadow-orange-900/50 hover:scale-105 hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-orange-600/20 hover:bg-orange-600 text-orange-300 hover:text-white text-xs font-bold uppercase tracking-wider border border-orange-500/40 transition-all duration-300 cursor-pointer"
               >
-                Board the Ship ⚓
+                Skip Intro ⚡
               </button>
             </div>
           </div>
@@ -393,7 +535,7 @@ export default function Home() {
       {/* FOOTER */}
       <footer className="border-t border-zinc-800 py-12 px-6 bg-zinc-950 text-center text-xs text-zinc-500 space-y-4">
         <p>© 2026 Pirates of Grill. All rights reserved. Built for legendary barbecue feasts.</p>
-        <p className="font-mono text-[10px]">Milestone 2 • Public Brand Experience & Cinematic Animation Complete</p>
+        <p className="font-mono text-[10px]">Milestone 2 • Public Brand Experience & 3D Blender Animation Complete</p>
       </footer>
 
     </div>
