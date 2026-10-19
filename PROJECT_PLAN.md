@@ -56,22 +56,22 @@ Use UUID primary keys, `timestamptz` timestamps, foreign keys, check constraints
 
 ## Milestones and acceptance gates
 
-### Milestone 0 — Product discovery and acceptance baseline
+### Milestone 0 — Product discovery and acceptance baseline ✅ COMPLETED
 **Build/decide:** Confirm brand/business inputs listed above; define user journeys, roles, booking rules, bill/tax rules, payment-provider sandbox, printer target, and launch scope. Establish visual references and an agreed browser/device matrix.
 
 **Accept when:** User approves the written scope and unresolved production blockers are explicitly listed. No production secrets or live payment processing are used.
 
-### Milestone 1 — Foundation, design system, and secure data layer
+### Milestone 1 — Foundation, design system, and secure data layer ✅ COMPLETED
 **Build:** Clean Next.js/TypeScript project foundation; responsive visual system; navigation/footer and reusable button/card/focus states; Supabase local/dev configuration; schema migrations, generated types, RLS policies, seed demo data, and authorization tests. Set up lint/typecheck/test scripts and environment-variable handling.
 
 **Accept when:** App runs locally; public pages cannot read private operational data; unauthorized users cannot access staff/admin operations; role and location isolation tests pass; no service-role key is present in browser bundles; user approves visual direction and schema.
 
-### Milestone 2 — Public brand experience and motion intro
-**Build:** Premium home page with approved brand story, imagery, menu highlights, offers, location/contact details, and calls to action. Add the Blender-produced/pre-rendered pirate-and-barbecue intro with skip control, reduced-motion handling, mobile fallback, and sensible loading behavior. Smooth scrolling only where it does not impair navigation or accessibility; buttons have consistent hover, focus, and active states.
+### Milestone 2 — Public brand experience and motion intro ✅ COMPLETED
+**Build:** Premium home page with approved brand story, imagery, menu highlights, offers, location/contact details, and calls to action. Add the Blender-produced/pre-rendered pirate-and-barbecue intro with skip control, reduced-motion handling, mobile fallback, and sensible loading behavior. Smooth scrolling only where it does not impair navigation or accessibility; buttons have consistent hover, focus, and active states. Added Tailwind CSS CDN for portable group development.
 
 **Accept when:** Golden paths work on desktop/mobile and keyboard; intro is skippable and reduced-motion users are not forced through it; performance and image loading are checked; 4K layouts use readable constrained content rather than simply stretching; user approves the visual experience.
 
-### Milestone 3 — Menu and reservation workflow
+### Milestone 3 — Menu and reservation workflow 🔄 NEXT UP
 **Build:** Search/filterable menu and item detail presentation; guest/customer reservation form; server-side availability validation and transactional table allocation; confirmation/cancellation flow and staff reservation view; realtime refresh where it improves the experience.
 
 **Accept when:** Tests cover invalid input, unavailable slots, concurrent attempts for the same table/slot, cancellation, and timezone boundaries; bookings persist correctly and only authorized staff see guest contact data; user approves the booking rules and journey.

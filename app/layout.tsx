@@ -13,6 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full antialiased">
+      <head>
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+      </head>
       <body className="min-h-full flex flex-col bg-[#090a0f] text-zinc-100 font-sans">
         {children}
       </body>
